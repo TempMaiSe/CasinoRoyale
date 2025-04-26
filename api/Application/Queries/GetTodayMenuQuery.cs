@@ -1,3 +1,4 @@
+using CasinoRoyale.Api.Domain.Aggregates;
 using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Domain.Events;
 using KurrentDB.Client;
@@ -31,12 +32,7 @@ public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnum
             StreamPosition.End,
             1,
             cancellationToken: cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (locationEvent == null)
-        {
-            throw new InvalidOperationException($"Location {request.LocationId} not found");
-        }
+            .FirstAsync(cancellationToken);
 
         var eventData = JsonSerializer.Deserialize<LocationCreatedEvent>(
             Encoding.UTF8.GetString(locationEvent.Event.Data.Span));
