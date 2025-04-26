@@ -1,3 +1,5 @@
+using CasinoRoyale.Api.Domain.Entities;
+
 namespace CasinoRoyale.Api.Domain.Events;
 
 public interface IDomainEvent
@@ -8,31 +10,31 @@ public interface IDomainEvent
 
 public record DailyMenuCreatedEvent(Guid MenuId, DateOnly Date) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
 public record DailyMenuDisabledEvent(Guid MenuId, DateOnly Date) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
 public record DailyMenuEnabledEvent(Guid MenuId, DateOnly Date) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
 public record MenuItemAddedEvent(Guid MenuId, MenuItem MenuItem) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
 public record MenuItemRemovedEvent(Guid MenuId, DateOnly Date, Guid MenuItemId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }
 
@@ -42,6 +44,6 @@ public record DeviceRegisteredEvent(
     DeviceType Type,
     string ApiKey) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.CreateSequential();
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 }

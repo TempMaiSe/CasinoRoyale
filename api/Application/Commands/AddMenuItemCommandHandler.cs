@@ -1,14 +1,14 @@
 using CasinoRoyale.Api.Domain.Entities;
-using EventStore.Client;
+using KurrentDB.Client;
 using MediatR;
 
 namespace CasinoRoyale.Api.Application.Commands;
 
 public class AddMenuItemCommandHandler : IRequestHandler<AddMenuItemCommand, Guid>
 {
-    private readonly EventStoreClient _eventStore;
+    private readonly KurrentDBClient _eventStore;
 
-    public AddMenuItemCommandHandler(EventStoreClient eventStore)
+    public AddMenuItemCommandHandler(KurrentDBClient eventStore)
     {
         _eventStore = eventStore;
     }

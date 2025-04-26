@@ -17,7 +17,7 @@ public class DailyMenu
 
     public DailyMenu(DateOnly date)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateSequential();
         Date = date;
         IsEnabled = true;
         AddDomainEvent(new DailyMenuCreatedEvent(Id, date));

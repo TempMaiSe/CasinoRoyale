@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using EventStore.Client;
+using KurrentDB.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -9,14 +9,14 @@ namespace CasinoRoyale.Api.Infrastructure.Authentication;
 
 public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    private readonly EventStoreClient _eventStore;
+    private readonly KurrentDBClient _eventStore;
 
     public ApiKeyAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
         ISystemClock clock,
-        EventStoreClient eventStore)
+        KurrentDBClient eventStore)
         : base(options, logger, encoder, clock)
     {
         _eventStore = eventStore;

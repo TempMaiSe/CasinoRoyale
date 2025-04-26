@@ -1,4 +1,6 @@
 using CasinoRoyale.Api.Domain.Entities;
+using KurrentDB.Client;
+using MediatR;
 
 namespace CasinoRoyale.Api.Application.Queries;
 
@@ -6,9 +8,9 @@ public record GetTodayMenuQuery() : IQuery<IEnumerable<MenuItem>>;
 
 public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnumerable<MenuItem>>
 {
-    private readonly EventStoreClient _eventStore;
+    private readonly KurrentDBClient _eventStore;
 
-    public GetTodayMenuQueryHandler(EventStoreClient eventStore)
+    public GetTodayMenuQueryHandler(KurrentDBClient eventStore)
     {
         _eventStore = eventStore;
     }

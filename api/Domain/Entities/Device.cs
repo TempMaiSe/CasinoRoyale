@@ -13,7 +13,7 @@ public class Device
 
     public Device(string name, DeviceType type)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateSequential();
         Name = name;
         Type = type;
         ApiKey = GenerateApiKey();
@@ -23,7 +23,7 @@ public class Device
 
     private static string GenerateApiKey()
     {
-        return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+        return Convert.ToBase64String(Guid.CreateSequential().ToByteArray())
             .Replace("/", "_")
             .Replace("+", "-")
             .Replace("=", "");

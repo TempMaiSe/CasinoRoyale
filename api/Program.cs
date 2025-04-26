@@ -1,4 +1,4 @@
-using EventStore.Client;
+using KurrentDB.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Microsoft.OpenApi.Models;
@@ -44,7 +44,7 @@ var authorizationOptions = builder.Configuration
 builder.Services.AddKeycloakAuthorization(authorizationOptions);
 
 // Add EventStoreDB
-builder.Services.AddSingleton(new EventStoreClient(EventStoreClientSettings.Create(
+builder.Services.AddSingleton(new KurrentDBClient(KurrentDBClientSettings.Create(
     builder.Configuration.GetConnectionString("EventStore"))));
 
 // Add MediatR
