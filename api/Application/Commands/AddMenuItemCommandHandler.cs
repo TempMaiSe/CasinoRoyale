@@ -1,4 +1,5 @@
 using CasinoRoyale.Api.Domain.Entities;
+using CasinoRoyale.Api.Domain.Events;
 using KurrentDB.Client;
 using MediatR;
 using System.Text;
