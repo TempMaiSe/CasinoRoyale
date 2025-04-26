@@ -1,0 +1,53 @@
+using CasinoRoyale.Api.Domain.Entities;
+
+namespace CasinoRoyale.Api.Application.Queries;
+
+public record GetTodayMenuQuery() : IQuery<IEnumerable<MenuItem>>;
+
+public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnumerable<MenuItem>>
+{
+    private readonly EventStoreClient _eventStore;
+
+    public GetTodayMenuQueryHandler(EventStoreClient eventStore)
+    {
+        _eventStore = eventStore;
+    }
+
+    public async Task<IEnumerable<MenuItem>> Handle(GetTodayMenuQuery request, CancellationToken cancellationToken)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var streamName = $"dailymenu-{today:yyyy-MM-dd}";
+        
+        var events = _eventStore.ReadStreamAsync(
+            Direction.Forwards,
+            streamName,
+            StreamPosition.Start,
+            cancellationToken: cancellationToken);
+
+        var dailyMenu = new DailyMenu(today);
+        
+        await foreach (var @event in events)
+        {
+            var eventData = JsonSerializer.Deserialize<IDomainEvent>(
+                Encoding.UTF8.GetString(@event.Event.Data.Span));
+
+            switch (eventData)
+            {
+                case MenuItemAddedEvent menuItemAdded:
+                    dailyMenu.AddMenuItem(menuItemAdded.MenuItem);
+                    break;
+                case MenuItemRemovedEvent menuItemRemoved:
+                    dailyMenu.RemoveMenuItem(menuItemRemoved.MenuItemId);
+                    break;
+                case DailyMenuDisabledEvent:
+                    dailyMenu.DisableMenu();
+                    break;
+                case DailyMenuEnabledEvent:
+                    dailyMenu.EnableMenu();
+                    break;
+            }
+        }
+
+        return dailyMenu.IsEnabled ? dailyMenu.MenuItems : Enumerable.Empty<MenuItem>();
+    }
+}
