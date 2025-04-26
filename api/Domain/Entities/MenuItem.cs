@@ -24,7 +24,7 @@ public class MenuItem
         bool isSpecialOffer = false,
         DayOfWeek? specialOfferDay = null)
     {
-        Id = Guid.CreateSequential();
+        Id = Guid.CreateVersion7();
         Name = name;
         Description = description;
         EmployeePrice = employeePrice;

@@ -13,7 +13,7 @@ public class Location
 
     public Location(string name, DateTimeZone timeZone)
     {
-        Id = Guid.CreateSequential();
+        Id = Guid.CreateVersion7();
         Name = name;
         TimeZone = timeZone;
         IsActive = true;

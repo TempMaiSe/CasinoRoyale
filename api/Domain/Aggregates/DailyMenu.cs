@@ -20,7 +20,7 @@ public class DailyMenu
 
     public DailyMenu(LocalDate date, Location location)
     {
-        Id = Guid.CreateSequential();
+        Id = Guid.CreateVersion7();
         Date = date;
         Location = location;
         LocationId = location.Id;

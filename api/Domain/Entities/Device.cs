@@ -1,3 +1,4 @@
+using CasinoRoyale.Api.Domain.Events;
 using NodaTime;
 
 namespace CasinoRoyale.Api.Domain.Entities;
@@ -17,7 +18,7 @@ public class Device
 
     public Device(string name, DeviceType type, Location location)
     {
-        Id = Guid.CreateSequential();
+        Id = Guid.CreateVersion7();
         Name = name;
         Type = type;
         Location = location;
@@ -29,7 +30,7 @@ public class Device
 
     private static string GenerateApiKey()
     {
-        return Convert.ToBase64String(Guid.CreateSequential().ToByteArray())
+        return Convert.ToBase64String(Guid.CreateVersion7().ToByteArray())
             .Replace("/", "_")
             .Replace("+", "-")
             .Replace("=", "");

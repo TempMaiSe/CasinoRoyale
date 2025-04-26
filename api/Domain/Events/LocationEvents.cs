@@ -7,21 +7,21 @@ public record LocationCreatedEvent(
     string Name,
     string TimeZoneId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
     Guid IDomainEvent.LocationId => LocationId;
 }
 
 public record LocationDeactivatedEvent(Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
     Guid IDomainEvent.LocationId => LocationId;
 }
 
 public record LocationActivatedEvent(Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
     Guid IDomainEvent.LocationId => LocationId;
 }

@@ -12,31 +12,31 @@ public interface IDomainEvent
 
 public record DailyMenuCreatedEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record DailyMenuDisabledEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record DailyMenuEnabledEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record MenuItemAddedEvent(Guid MenuId, MenuItem MenuItem, Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record MenuItemRemovedEvent(Guid MenuId, LocalDate Date, Guid MenuItemId, Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
@@ -47,6 +47,6 @@ public record DeviceRegisteredEvent(
     string ApiKey,
     Guid LocationId) : IDomainEvent
 {
-    public Guid Id { get; } = Guid.CreateSequential();
+    public Guid Id { get; } = Guid.CreateVersion7();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
