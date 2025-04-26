@@ -3,6 +3,7 @@ using CasinoRoyale.Api.Domain.Entities;
 namespace CasinoRoyale.Api.Application.Commands;
 
 public record AddMenuItemCommand(
+    Guid LocationId,
     Guid DailyMenuId,
     string Name,
     string Description,
