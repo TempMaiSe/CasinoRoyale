@@ -2,7 +2,6 @@ using KurrentDB.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using MediatR;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using System.Text.Json;
@@ -18,22 +17,23 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 
-// AddEndpointsApiExplorer requires Microsoft.AspNetCore.Mvc.Versioning
+// Configure OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.ConfigureOpenApi(options =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Casino Royale API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.DocumentTitle = "Casino Royale API";
+    options.Version = "v1";
+    options.SecuritySchemes.Add("Bearer", new()
     {
-        Type = SecuritySchemeType.Http,
+        Type = "http",
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
-    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    options.SecuritySchemes.Add("ApiKey", new()
     {
-        Type = SecuritySchemeType.ApiKey,
+        Type = "apiKey",
         Name = "X-API-Key",
-        In = ParameterLocation.Header
+        In = "header"
     });
 });
 
@@ -79,8 +79,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseOpenApi();  // Use the new OpenAPI middleware
 }
 
 app.UseHttpsRedirection();
