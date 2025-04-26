@@ -9,6 +9,8 @@ public class DailyMenu
     public Guid Id { get; private set; }
     public LocalDate Date { get; private set; }
     public bool IsEnabled { get; private set; }
+    public Guid LocationId { get; private set; }
+    public Location Location { get; private set; }
     private readonly List<MenuItem> _menuItems = new();
     public IReadOnlyCollection<MenuItem> MenuItems => _menuItems.AsReadOnly();
     private readonly List<IDomainEvent> _domainEvents = new();
@@ -16,26 +18,28 @@ public class DailyMenu
 
     private DailyMenu() { }
 
-    public DailyMenu(LocalDate date)
+    public DailyMenu(LocalDate date, Location location)
     {
         Id = Guid.CreateSequential();
         Date = date;
+        Location = location;
+        LocationId = location.Id;
         IsEnabled = true;
-        AddDomainEvent(new DailyMenuCreatedEvent(Id, date));
+        AddDomainEvent(new DailyMenuCreatedEvent(Id, date, location.Id));
     }
 
     public void DisableMenu()
     {
         if (!IsEnabled) return;
         IsEnabled = false;
-        AddDomainEvent(new DailyMenuDisabledEvent(Id, Date));
+        AddDomainEvent(new DailyMenuDisabledEvent(Id, Date, LocationId));
     }
 
     public void EnableMenu()
     {
         if (IsEnabled) return;
         IsEnabled = true;
-        AddDomainEvent(new DailyMenuEnabledEvent(Id, Date));
+        AddDomainEvent(new DailyMenuEnabledEvent(Id, Date, LocationId));
     }
 
     public void AddMenuItem(MenuItem menuItem)
@@ -44,7 +48,7 @@ public class DailyMenu
             throw new InvalidOperationException($"Menu item with ID {menuItem.Id} already exists");
 
         _menuItems.Add(menuItem);
-        AddDomainEvent(new MenuItemAddedEvent(Id, Date, menuItem));
+        AddDomainEvent(new MenuItemAddedEvent(Id, menuItem, LocationId));
     }
 
     public void RemoveMenuItem(Guid menuItemId)
@@ -53,7 +57,7 @@ public class DailyMenu
         if (menuItem == null) return;
 
         _menuItems.Remove(menuItem);
-        AddDomainEvent(new MenuItemRemovedEvent(Id, Date, menuItemId));
+        AddDomainEvent(new MenuItemRemovedEvent(Id, Date, menuItemId, LocationId));
     }
 
     private void AddDomainEvent(IDomainEvent domainEvent)

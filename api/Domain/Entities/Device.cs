@@ -10,14 +10,18 @@ public class Device
     public DeviceType Type { get; private set; }
     public bool IsEnabled { get; private set; }
     public Instant RegisteredAt { get; private set; }
+    public Guid LocationId { get; private set; }
+    public Location Location { get; private set; }
 
     private Device() { }
 
-    public Device(string name, DeviceType type)
+    public Device(string name, DeviceType type, Location location)
     {
         Id = Guid.CreateSequential();
         Name = name;
         Type = type;
+        Location = location;
+        LocationId = location.Id;
         ApiKey = GenerateApiKey();
         IsEnabled = true;
         RegisteredAt = SystemClock.Instance.GetCurrentInstant();

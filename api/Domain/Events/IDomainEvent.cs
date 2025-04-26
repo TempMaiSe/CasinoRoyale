@@ -7,33 +7,34 @@ public interface IDomainEvent
 {
     Guid Id { get; }
     Instant Timestamp { get; }
+    Guid LocationId { get; }
 }
 
-public record DailyMenuCreatedEvent(Guid MenuId, LocalDate Date) : IDomainEvent
+public record DailyMenuCreatedEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record DailyMenuDisabledEvent(Guid MenuId, LocalDate Date) : IDomainEvent
+public record DailyMenuDisabledEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record DailyMenuEnabledEvent(Guid MenuId, LocalDate Date) : IDomainEvent
+public record DailyMenuEnabledEvent(Guid MenuId, LocalDate Date, Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record MenuItemAddedEvent(Guid MenuId, MenuItem MenuItem) : IDomainEvent
+public record MenuItemAddedEvent(Guid MenuId, MenuItem MenuItem, Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record MenuItemRemovedEvent(Guid MenuId, LocalDate Date, Guid MenuItemId) : IDomainEvent
+public record MenuItemRemovedEvent(Guid MenuId, LocalDate Date, Guid MenuItemId, Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
@@ -43,7 +44,8 @@ public record DeviceRegisteredEvent(
     Guid DeviceId,
     string Name,
     DeviceType Type,
-    string ApiKey) : IDomainEvent
+    string ApiKey,
+    Guid LocationId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
     public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();

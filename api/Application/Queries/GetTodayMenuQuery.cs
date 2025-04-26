@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace CasinoRoyale.Api.Application.Queries;
 
-public record GetTodayMenuQuery() : IQuery<IEnumerable<MenuItem>>;
+public record GetTodayMenuQuery(Guid LocationId) : IQuery<IEnumerable<MenuItem>>;
 
 public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnumerable<MenuItem>>
 {
@@ -23,8 +23,27 @@ public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnum
 
     public async Task<IEnumerable<MenuItem>> Handle(GetTodayMenuQuery request, CancellationToken cancellationToken)
     {
-        var today = LocalDate.FromDateTime(DateTime.SpecifyKind(_clock.GetCurrentInstant().ToDateTimeUtc(), DateTimeKind.Utc));
-        var streamName = $"dailymenu-{today:yyyy-MM-dd}";
+        // First get the location to determine the timezone
+        var locationStream = $"location-{request.LocationId}";
+        var locationEvent = await _eventStore.ReadStreamAsync(
+            Direction.Backwards,
+            locationStream,
+            StreamPosition.End,
+            1,
+            cancellationToken: cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (locationEvent == null)
+        {
+            throw new InvalidOperationException($"Location {request.LocationId} not found");
+        }
+
+        var eventData = JsonSerializer.Deserialize<LocationCreatedEvent>(
+            Encoding.UTF8.GetString(locationEvent.Event.Data.Span));
+        var location = new Location(eventData.Name, DateTimeZoneProviders.Tzdb[eventData.TimeZoneId]);
+
+        var today = location.GetCurrentDate(_clock);
+        var streamName = $"dailymenu-{request.LocationId}-{today:yyyy-MM-dd}";
         
         var events = _eventStore.ReadStreamAsync(
             Direction.Forwards,
@@ -32,14 +51,14 @@ public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnum
             StreamPosition.Start,
             cancellationToken: cancellationToken);
 
-        var dailyMenu = new DailyMenu(today);
+        var dailyMenu = new DailyMenu(today, location);
         
         await foreach (var @event in events)
         {
-            var eventData = JsonSerializer.Deserialize<IDomainEvent>(
+            var menuEventData = JsonSerializer.Deserialize<IDomainEvent>(
                 Encoding.UTF8.GetString(@event.Event.Data.Span));
 
-            switch (eventData)
+            switch (menuEventData)
             {
                 case MenuItemAddedEvent menuItemAdded:
                     dailyMenu.AddMenuItem(menuItemAdded.MenuItem);
