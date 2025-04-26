@@ -4,6 +4,7 @@ using KurrentDB.Client;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using CasinoRoyale.Api.Domain.Events;
 
 namespace CasinoRoyale.Api.Infrastructure.Authentication;
 
@@ -42,11 +43,13 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<AuthenticationS
                 Direction.Forwards,
                 Position.Start,
                 maxCount: 1000,
-                resolveLinkTos: true,
-                filterName: "DeviceRegistered");
+                resolveLinkTos: true);
 
             await foreach (var @event in result)
             {
+                if (!@event.Event.EventType.Equals("DeviceRegistered", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 var eventData = JsonSerializer.Deserialize<DeviceRegisteredEvent>(
                     System.Text.Encoding.UTF8.GetString(@event.Event.Data.Span));
 
