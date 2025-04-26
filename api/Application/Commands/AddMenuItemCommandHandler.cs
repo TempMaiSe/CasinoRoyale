@@ -1,6 +1,8 @@
 using CasinoRoyale.Api.Domain.Entities;
 using KurrentDB.Client;
 using MediatR;
+using System.Text;
+using System.Text.Json;
 
 namespace CasinoRoyale.Api.Application.Commands;
 
