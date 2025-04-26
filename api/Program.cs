@@ -166,4 +166,28 @@ app.MapGet("/api/kiosk/dish/{id}", async (Guid id, IMediator mediator) =>
     .RequireAuthorization(ApiKeyScheme)
     .WithOpenApi();
 
+// Location Management Endpoints
+app.MapGet("/api/locations", async (IMediator mediator) =>
+    {
+        var query = new GetLocationsQuery();
+        return await mediator.Send(query);
+    })
+    .WithName("GetLocations")
+    .WithOpenApi();
+
+app.MapPost("/api/locations", async (
+    AddLocationCommand command,
+    IMediator mediator,
+    ClaimsPrincipal user) =>
+    {
+        if (!user.IsInRole("admin"))
+            return Results.Forbid();
+
+        var result = await mediator.Send(command);
+        return Results.Created($"/api/locations/{result}", result);
+    })
+    .WithName("AddLocation")
+    .RequireAuthorization()
+    .WithOpenApi();
+
 await app.RunAsync();
