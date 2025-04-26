@@ -19,9 +19,9 @@ builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 
 // Configure OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.ConfigureOpenApi(options =>
+builder.Services.AddOpenApi(options =>
 {
-    options.DocumentTitle = "Casino Royale API";
+    /*options.DocumentTitle = "Casino Royale API";
     options.Version = "v1";
     options.SecuritySchemes.Add("Bearer", new()
     {
@@ -34,7 +34,7 @@ builder.Services.ConfigureOpenApi(options =>
         Type = "apiKey",
         Name = "X-API-Key",
         In = "header"
-    });
+    });*/
 });
 
 // Add Keycloak Authentication
