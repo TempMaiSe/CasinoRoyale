@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+'use client';
+
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import Keycloak from 'keycloak-js';
 import { env } from '@/lib/env';
 
@@ -26,7 +28,11 @@ const keycloak = new Keycloak({
   clientId: env.keycloak.clientId,
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+type AuthProviderProps = Readonly<{
+  children: React.ReactNode;
+}>;
+
+export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
@@ -41,11 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then((authenticated) => {
         setIsAuthenticated(authenticated);
         setIsAdmin(keycloak.hasRealmRole('admin'));
-        if (authenticated) {
+        if (authenticated && keycloak.token) {
           setToken(keycloak.token);
           keycloak.onTokenExpired = () => {
             keycloak.updateToken(70).then((refreshed) => {
-              if (refreshed) {
+              if (refreshed && keycloak.token) {
                 setToken(keycloak.token);
               }
             });
@@ -63,17 +69,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     keycloak.logout();
   };
 
+  const value = useMemo(() => ({
+    isAuthenticated,
+    isLoading,
+    token,
+    isAdmin,
+    login,
+    logout,
+  }), [isAuthenticated, isLoading, token, isAdmin]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        isLoading,
-        token,
-        isAdmin,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

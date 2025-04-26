@@ -1,3 +1,5 @@
+'use client';
+
 import { useLocation } from '@/contexts/LocationContext';
 
 export default function LocationSelector() {
