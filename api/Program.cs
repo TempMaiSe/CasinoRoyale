@@ -1,4 +1,5 @@
 using KurrentDB.Client;
+using Keycloak.AuthServices.Sdk;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using MediatR;
@@ -9,6 +10,7 @@ using NodaTime;
 using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Application.Commands;
 using CasinoRoyale.Api.Application.Queries;
+using CasinoRoyale.Api.Infrastructure.Authentication;
 
 const string ApiKeyScheme = "ApiKey";
 
@@ -38,7 +40,7 @@ builder.Services.AddOpenApi(options =>
 });
 
 // Add Keycloak Authentication
-var authenticationOptions = builder.Configuration
+/*var authenticationOptions = builder.Configuration
     .GetSection(KeycloakAuthenticationOptions.Section)
     .Get<KeycloakAuthenticationOptions>(options => 
     {
@@ -48,15 +50,13 @@ var authenticationOptions = builder.Configuration
 builder.Services.AddKeycloakWebApiAuthentication(authenticationOptions);
 
 // Add API Key Authentication
+*/
 builder.Services.AddAuthentication()
     .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyScheme, _ => { });
 
 // Add Authorization
-var authorizationOptions = builder.Configuration
-    .GetSection(KeycloakProtectionClientOptions.Section)
-    .Get<KeycloakProtectionClientOptions>();
-
-builder.Services.AddKeycloakAuthorization(authorizationOptions);
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration); // [!code focus]
+builder.Services.AddAuthorization(); // [!code focus]
 
 // Add EventStoreDB
 builder.Services.AddSingleton(new KurrentDBClient(KurrentDBClientSettings.Create(
