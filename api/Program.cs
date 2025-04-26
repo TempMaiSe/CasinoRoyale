@@ -40,9 +40,12 @@ builder.Services.AddOpenApi(options =>
 // Add Keycloak Authentication
 var authenticationOptions = builder.Configuration
     .GetSection(KeycloakAuthenticationOptions.Section)
-    .Get<KeycloakAuthenticationOptions>();
+    .Get<KeycloakAuthenticationOptions>(options => 
+    {
+        options.BinderType = KeycloakFormatBinder.Instance;
+    });
 
-builder.Services.AddKeycloakAuthentication(authenticationOptions);
+builder.Services.AddKeycloakWebApiAuthentication(authenticationOptions);
 
 // Add API Key Authentication
 builder.Services.AddAuthentication()
