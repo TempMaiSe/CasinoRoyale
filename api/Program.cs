@@ -91,9 +91,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Menu Management Endpoints
-app.MapGet("/api/menu/today", async (IMediator mediator) =>
+app.MapGet("/api/locations/{locationId}/menu/today", async (Guid locationId, IMediator mediator) =>
     {
-        var query = new GetTodayMenuQuery();
+        var query = new GetTodayMenuQuery(locationId);
         return await mediator.Send(query);
     })
     .WithName("GetTodayMenu")
@@ -108,13 +108,17 @@ app.MapGet("/api/menu/dish/{id}", async (Guid id, IMediator mediator) =>
     .WithName("GetMenuItem")
     .WithOpenApi();
 
-app.MapPost("/api/menu/items", async (
+app.MapPost("/api/locations/{locationId}/menu/items", async (
+    Guid locationId,
     AddMenuItemCommand command,
     IMediator mediator,
     ClaimsPrincipal user) =>
     {
         if (!user.IsInRole("admin"))
             return Results.Forbid();
+
+        if (command.LocationId != locationId)
+            return Results.BadRequest("Location ID in URL must match command");
 
         var result = await mediator.Send(command);
         return Results.Created($"/api/menu/dish/{result}", result);
@@ -124,13 +128,17 @@ app.MapPost("/api/menu/items", async (
     .WithOpenApi();
 
 // Device Management Endpoints
-app.MapPost("/api/devices", async (
+app.MapPost("/api/locations/{locationId}/devices", async (
+    Guid locationId,
     RegisterDeviceCommand command,
     IMediator mediator,
     ClaimsPrincipal user) =>
     {
         if (!user.IsInRole("admin"))
             return Results.Forbid();
+
+        if (command.LocationId != locationId)
+            return Results.BadRequest("Location ID in URL must match command");
 
         var result = await mediator.Send(command);
         return Results.Created($"/api/devices/{result.DeviceId}", result);
@@ -139,9 +147,9 @@ app.MapPost("/api/devices", async (
     .RequireAuthorization()
     .WithOpenApi();
 
-app.MapGet("/api/kiosk/today", async (IMediator mediator) =>
+app.MapGet("/api/locations/{locationId}/kiosk/today", async (Guid locationId, IMediator mediator) =>
     {
-        var query = new GetTodayMenuQuery();
+        var query = new GetTodayMenuQuery(locationId);
         return await mediator.Send(query);
     })
     .WithName("GetKioskMenu")
