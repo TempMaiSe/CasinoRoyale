@@ -1,16 +1,22 @@
 using KurrentDB.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
+using MediatR;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Text.Json;
 using NodaTime;
+using CasinoRoyale.Api.Domain.Entities;
+using CasinoRoyale.Api.Application.Commands;
+using CasinoRoyale.Api.Application.Queries;
 
 const string ApiKeyScheme = "ApiKey";
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddSingleton<IClock>(SystemClock.Instance);
+builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 
 // AddEndpointsApiExplorer requires Microsoft.AspNetCore.Mvc.Versioning
 builder.Services.AddEndpointsApiExplorer();
