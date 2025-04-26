@@ -82,7 +82,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseOpenApi();  // Use the new OpenAPI middleware
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
