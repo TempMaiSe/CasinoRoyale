@@ -1,12 +1,13 @@
 using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Domain.Events;
+using NodaTime;
 
 namespace CasinoRoyale.Api.Domain.Aggregates;
 
 public class DailyMenu
 {
     public Guid Id { get; private set; }
-    public DateOnly Date { get; private set; }
+    public LocalDate Date { get; private set; }
     public bool IsEnabled { get; private set; }
     private readonly List<MenuItem> _menuItems = new();
     public IReadOnlyCollection<MenuItem> MenuItems => _menuItems.AsReadOnly();
@@ -15,7 +16,7 @@ public class DailyMenu
 
     private DailyMenu() { }
 
-    public DailyMenu(DateOnly date)
+    public DailyMenu(LocalDate date)
     {
         Id = Guid.CreateSequential();
         Date = date;

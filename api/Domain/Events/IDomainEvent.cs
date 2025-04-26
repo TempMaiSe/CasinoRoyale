@@ -1,41 +1,42 @@
 using CasinoRoyale.Api.Domain.Entities;
+using NodaTime;
 
 namespace CasinoRoyale.Api.Domain.Events;
 
 public interface IDomainEvent
 {
     Guid Id { get; }
-    DateTime Timestamp { get; }
+    Instant Timestamp { get; }
 }
 
-public record DailyMenuCreatedEvent(Guid MenuId, DateOnly Date) : IDomainEvent
+public record DailyMenuCreatedEvent(Guid MenuId, LocalDate Date) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record DailyMenuDisabledEvent(Guid MenuId, DateOnly Date) : IDomainEvent
+public record DailyMenuDisabledEvent(Guid MenuId, LocalDate Date) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record DailyMenuEnabledEvent(Guid MenuId, DateOnly Date) : IDomainEvent
+public record DailyMenuEnabledEvent(Guid MenuId, LocalDate Date) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record MenuItemAddedEvent(Guid MenuId, MenuItem MenuItem) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
-public record MenuItemRemovedEvent(Guid MenuId, DateOnly Date, Guid MenuItemId) : IDomainEvent
+public record MenuItemRemovedEvent(Guid MenuId, LocalDate Date, Guid MenuItemId) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }
 
 public record DeviceRegisteredEvent(
@@ -45,5 +46,5 @@ public record DeviceRegisteredEvent(
     string ApiKey) : IDomainEvent
 {
     public Guid Id { get; } = Guid.CreateSequential();
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public Instant Timestamp { get; } = SystemClock.Instance.GetCurrentInstant();
 }

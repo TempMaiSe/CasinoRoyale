@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace CasinoRoyale.Api.Domain.Entities;
 
 public class Device
@@ -7,7 +9,7 @@ public class Device
     public string ApiKey { get; private set; }
     public DeviceType Type { get; private set; }
     public bool IsEnabled { get; private set; }
-    public DateTime RegisteredAt { get; private set; }
+    public Instant RegisteredAt { get; private set; }
 
     private Device() { }
 
@@ -18,7 +20,7 @@ public class Device
         Type = type;
         ApiKey = GenerateApiKey();
         IsEnabled = true;
-        RegisteredAt = DateTime.UtcNow;
+        RegisteredAt = SystemClock.Instance.GetCurrentInstant();
     }
 
     private static string GenerateApiKey()

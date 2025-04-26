@@ -1,12 +1,18 @@
-using KurrentDB.Client;
+using EventStore.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication;
+using NodaTime;
+
+const string ApiKeyScheme = "ApiKey";
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+builder.Services.AddSingleton<IClock>(SystemClock.Instance);
+
+// AddEndpointsApiExplorer requires Microsoft.AspNetCore.Mvc.Versioning
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -34,7 +40,7 @@ builder.Services.AddKeycloakAuthentication(authenticationOptions);
 
 // Add API Key Authentication
 builder.Services.AddAuthentication()
-    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>("ApiKey", _ => { });
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyScheme, _ => { });
 
 // Add Authorization
 var authorizationOptions = builder.Configuration
@@ -131,7 +137,7 @@ app.MapGet("/api/kiosk/today", async (IMediator mediator) =>
         return await mediator.Send(query);
     })
     .WithName("GetKioskMenu")
-    .RequireAuthorization("ApiKey")
+    .RequireAuthorization(ApiKeyScheme)
     .WithOpenApi();
 
 app.MapGet("/api/kiosk/dish/{id}", async (Guid id, IMediator mediator) =>
@@ -141,7 +147,7 @@ app.MapGet("/api/kiosk/dish/{id}", async (Guid id, IMediator mediator) =>
         return result is null ? Results.NotFound() : Results.Ok(result);
     })
     .WithName("GetKioskMenuItem")
-    .RequireAuthorization("ApiKey")
+    .RequireAuthorization(ApiKeyScheme)
     .WithOpenApi();
 
-app.Run();
+await app.RunAsync();
