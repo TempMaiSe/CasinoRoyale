@@ -1,4 +1,4 @@
-using EventStore.Client;
+using KurrentDB.Client;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Microsoft.OpenApi.Models;

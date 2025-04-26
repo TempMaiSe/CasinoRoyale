@@ -1,6 +1,6 @@
 using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Domain.Events;
-using EventStore.Client;
+using KurrentDB.Client;
 using MediatR;
 using NodaTime;
 using System.Text;
@@ -12,10 +12,10 @@ public record GetTodayMenuQuery(Guid LocationId) : IQuery<IEnumerable<MenuItem>>
 
 public class GetTodayMenuQueryHandler : IRequestHandler<GetTodayMenuQuery, IEnumerable<MenuItem>>
 {
-    private readonly EventStoreClient _eventStore;
+    private readonly KurrentDBClient _eventStore;
     private readonly IClock _clock;
 
-    public GetTodayMenuQueryHandler(EventStoreClient eventStore, IClock clock)
+    public GetTodayMenuQueryHandler(KurrentDBClient eventStore, IClock clock)
     {
         _eventStore = eventStore;
         _clock = clock;

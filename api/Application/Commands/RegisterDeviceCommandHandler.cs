@@ -1,6 +1,6 @@
 using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Domain.Events;
-using EventStore.Client;
+using KurrentDB.Client;
 using MediatR;
 using NodaTime;
 using System.Text;
@@ -10,9 +10,9 @@ namespace CasinoRoyale.Api.Application.Commands;
 
 public class RegisterDeviceCommandHandler : IRequestHandler<RegisterDeviceCommand, DeviceRegistrationResult>
 {
-    private readonly EventStoreClient _eventStore;
+    private readonly KurrentDBClient _eventStore;
 
-    public RegisterDeviceCommandHandler(EventStoreClient eventStore)
+    public RegisterDeviceCommandHandler(KurrentDBClient eventStore)
     {
         _eventStore = eventStore;
     }
