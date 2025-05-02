@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import Keycloak from 'keycloak-js';
-import { env } from '@/lib/env';
+import { clientEnv } from '@/lib/env';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -23,9 +23,9 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const keycloak = new Keycloak({
-  url: env.keycloak.url,
-  realm: env.keycloak.realm,
-  clientId: env.keycloak.clientId,
+  url: clientEnv.keycloak.url,
+  realm: clientEnv.keycloak.realm,
+  clientId: clientEnv.keycloak.clientId,
 });
 
 type AuthProviderProps = Readonly<{

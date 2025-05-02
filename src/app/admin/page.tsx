@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { env } from '@/lib/env';
+import { clientEnv } from '@/lib/env';
 
 interface MenuItemFormData {
   name: string;
@@ -42,7 +42,7 @@ export default function AdminPage() {
     e.preventDefault();
     
     try {
-      const response = await fetch(`${env.apiUrl}/api/menu/items`, {
+      const response = await fetch(`${clientEnv.apiUrl}/api/menu/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

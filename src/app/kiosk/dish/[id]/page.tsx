@@ -1,4 +1,4 @@
-import { env } from '@/lib/env';
+import { clientEnv } from '@/lib/env';
 import { notFound } from 'next/navigation';
 
 interface DishPageProps {
@@ -8,7 +8,7 @@ interface DishPageProps {
 }
 
 async function getDish(id: string) {
-  const res = await fetch(`${env.apiUrl}/api/menu/dish/${id}`, {
+  const res = await fetch(`${clientEnv.apiUrl}/api/menu/dish/${id}`, {
     next: { revalidate: 60 }, // Revalidate every minute
   });
 
