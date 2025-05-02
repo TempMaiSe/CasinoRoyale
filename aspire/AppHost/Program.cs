@@ -3,6 +3,7 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var eventStore = builder.AddEventStore("eventstore")
+                        .WithImage("kurrentplatform/kurrentdb:25.0")
                         .WithOtlpExporter();
 
 var api = builder.AddProject<CasinoRoyale_Api>("api")
