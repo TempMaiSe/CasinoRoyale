@@ -1,7 +1,8 @@
+import { env } from '@/lib/env';
 import { MenuType } from '@/types/menu';
 
 async function getDailyMenu() {
-  const res = await fetch(`${process.env.API_URL}/api/menu/today`, {
+  const res = await fetch(`${env.apiUrl}/api/menu/today`, {
     next: { revalidate: 60 }, // Revalidate every minute
   });
 

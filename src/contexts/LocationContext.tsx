@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { env } from '@/lib/env';
 
 interface Location {
   id: string;
@@ -34,7 +35,7 @@ export function LocationProvider({ children }: LocationProviderProps) {
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    fetch('/api/locations')
+    fetch(`${env.apiUrl}/api/locations`)
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch locations');
         return response.json();

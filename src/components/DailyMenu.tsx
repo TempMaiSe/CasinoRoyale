@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import MenuItem from '@/components/MenuItem';
 import { useLocation } from '@/contexts/LocationContext';
+import { env } from '@/lib/env';
 
 interface MenuItem {
   id: string;
@@ -30,7 +31,7 @@ export default function DailyMenu() {
     }
 
     setIsLoading(true);
-    fetch(`/api/locations/${selectedLocation.id}/menu/today`)
+    fetch(`${env.apiUrl}/api/locations/${selectedLocation.id}/menu/today`)
       .then(response => {
         if (!response.ok) throw new Error('Failed to fetch menu');
         return response.json();
