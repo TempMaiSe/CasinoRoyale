@@ -73,9 +73,20 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJsApp", policy =>
     {
-        policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(','))
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            // In development, allow any localhost origin due to Aspire's dynamic ports
+            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            // In production, use the configured origins
+            policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(','))
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
     });
 });
 
@@ -88,6 +99,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Ensure CORS middleware runs before authentication
 app.UseCors("AllowNextJsApp");
 app.UseAuthentication();
 app.UseAuthorization();
