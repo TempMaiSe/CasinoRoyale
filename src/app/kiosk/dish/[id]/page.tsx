@@ -1,10 +1,22 @@
+'use client';
+
 import { clientEnv } from '@/lib/env';
 import { notFound } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface DishPageProps {
   params: {
     id: string;
   };
+}
+
+interface Dish {
+  name: string;
+  description: string;
+  employeePrice: number;
+  externalPrice: number;
+  allergens: string[];
+  isSpecialOffer: boolean;
 }
 
 async function getDish(id: string) {
@@ -16,8 +28,51 @@ async function getDish(id: string) {
   return res.json();
 }
 
-export default async function DishPage({ params }: DishPageProps) {
-  const dish = await getDish(params.id);
+export default function DishPage({ params }: DishPageProps) {
+  const [dish, setDish] = useState<Dish | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchDish = async () => {
+      try {
+        const data = await getDish(params.id);
+        if (!data) {
+          notFound();
+        }
+        setDish(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch dish'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDish();
+
+    // Set up periodic refresh
+    const refreshInterval = setInterval(() => {
+      fetchDish();
+    }, 60000); // Refresh every minute
+
+    return () => clearInterval(refreshInterval);
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-2xl text-gray-600">Loading dish...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-2xl text-red-600">Error: {error.message}</div>
+      </div>
+    );
+  }
 
   if (!dish) {
     notFound();

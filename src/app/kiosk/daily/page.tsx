@@ -1,5 +1,8 @@
+'use client';
+
 import { clientEnv } from '@/lib/env';
 import { MenuType } from '@/types/menu';
+import { useEffect, useState } from 'react';
 
 async function getDailyMenu() {
   const res = await fetch(`${clientEnv.apiUrl}/api/menu/today`, {
@@ -10,9 +13,47 @@ async function getDailyMenu() {
   return res.json();
 }
 
-export default async function DailyKioskPage() {
-  const menuItems = await getDailyMenu();
+export default function DailyKioskPage() {
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const categories = ['Breakfast', 'Lunch', 'AfternoonTea'] as const;
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const data = await getDailyMenu();
+        setMenuItems(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch menu'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMenu();
+
+    // Set up periodic refresh
+    const refreshInterval = setInterval(fetchMenu, 60000); // Refresh every minute
+
+    return () => clearInterval(refreshInterval);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-2xl text-gray-600">Loading menu...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-2xl text-red-600">Error: {error.message}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
