@@ -6,12 +6,15 @@ using NodaTime;
 using CasinoRoyale.Api.Application.Commands;
 using CasinoRoyale.Api.Application.Queries;
 using CasinoRoyale.Api.Infrastructure.Authentication;
+using CasinoRoyale.Api.Infrastructure.OpenApi;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.OpenApi.Models;
 
 const string ApiKeyScheme = "ApiKey";
+const string AdminRole = "admin";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,38 +23,28 @@ builder.AddServiceDefaults();
 // Add services to the container
 builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 
-// Configure OpenAPI/Swagger
+// Configure OpenAPI/Swagger with security schemes
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
-/*options.DocumentTitle = "Casino Royale API";
-    options.Version = "v1";
-    options.SecuritySchemes.Add("Bearer", new()
-    {
-        Type = "http",
-        Scheme = "bearer",
-        BearerFormat = "JWT"
-    });
-    options.SecuritySchemes.Add("ApiKey", new()
-    {
-        Type = "apiKey",
-        Name = "X-API-Key",
-        In = "header"
-    });*/
+    options.AddDocumentTransformer<SecuritySchemeTransformer>();
 });
 
+// Add Authentication with OpenID Connect for Keycloak
+var keycloakSection = builder.Configuration.GetSection("Keycloak")
+    ?? throw new InvalidOperationException("Keycloak configuration section is missing");
 
 // Add Keycloak Authentication
 var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
 builder.Services.AddAuthentication(oidcScheme)
                 .AddKeycloakOpenIdConnect(
-                    "keycloak", 
-                    realm: "casino-royale",
+                    "keycloak",
+                    realm: keycloakSection["realm"],
                     oidcScheme,
-                    options => 
+                    options =>
                     {
-                        options.ClientId = "casino-royale";
+                        options.ClientId = keycloakSection["resource"];
                         options.ResponseType = OpenIdConnectResponseType.Code;
                         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
                         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
@@ -60,21 +53,22 @@ builder.Services.AddAuthentication(oidcScheme)
                     })
                     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
-builder.Services.AddCascadingAuthenticationState();
-
 // Add API Key Authentication
 builder.Services.AddAuthentication()
     .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyScheme, _ => { });
+
+builder.Services.AddCascadingAuthenticationState();
 
 // Add Authorization
 builder.Services.AddAuthorization();
 
 // Add EventStoreDB
-builder.Services.AddSingleton(new KurrentDBClient(KurrentDBClientSettings.Create(
-    builder.Configuration.GetConnectionString("EventStore"))));
+var eventStoreConnection = builder.Configuration.GetConnectionString("EventStore")
+    ?? throw new InvalidOperationException("EventStore connection string is not configured");
+builder.Services.AddSingleton(new KurrentDBClient(KurrentDBClientSettings.Create(eventStoreConnection)));
 
 // Add MediatR
-builder.Services.AddMediatR(cfg => 
+builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 // Add CORS
@@ -91,8 +85,9 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            // In production, use the configured origins
-            policy.WithOrigins(builder.Configuration["AllowedOrigins"].Split(','))
+            var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(',')
+                ?? throw new InvalidOperationException("AllowedOrigins configuration is required in production");
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyMethod()
                   .AllowAnyHeader();
         }
@@ -137,9 +132,6 @@ app.MapPost("/api/locations/{locationId}/menu/items", async (
     IMediator mediator,
     ClaimsPrincipal user) =>
     {
-        if (!user.IsInRole("admin"))
-            return Results.Forbid();
-
         if (command.LocationId != locationId)
             return Results.BadRequest("Location ID in URL must match command");
 
@@ -147,8 +139,12 @@ app.MapPost("/api/locations/{locationId}/menu/items", async (
         return Results.Created($"/api/menu/dish/{result}", result);
     })
     .WithName("AddMenuItem")
-    .RequireAuthorization()
-    .WithOpenApi();
+    .RequireAuthorization(a => a.RequireRole(AdminRole))
+    .WithOpenApi(o =>
+    {
+        o.Tags.Add(new OpenApiTag { Name = AdminRole });
+        return o;
+    });
 
 // Device Management Endpoints
 app.MapPost("/api/locations/{locationId}/devices", async (
@@ -157,9 +153,6 @@ app.MapPost("/api/locations/{locationId}/devices", async (
     IMediator mediator,
     ClaimsPrincipal user) =>
     {
-        if (!user.IsInRole("admin"))
-            return Results.Forbid();
-
         if (command.LocationId != locationId)
             return Results.BadRequest("Location ID in URL must match command");
 
@@ -167,8 +160,12 @@ app.MapPost("/api/locations/{locationId}/devices", async (
         return Results.Created($"/api/devices/{result.DeviceId}", result);
     })
     .WithName("RegisterDevice")
-    .RequireAuthorization()
-    .WithOpenApi();
+    .RequireAuthorization(a => a.RequireRole(AdminRole))
+    .WithOpenApi(o =>
+    {
+        o.Tags.Add(new OpenApiTag { Name = AdminRole });
+        return o;
+    });
 
 app.MapGet("/api/locations/{locationId}/kiosk/today", async (Guid locationId, IMediator mediator) =>
     {
@@ -177,7 +174,11 @@ app.MapGet("/api/locations/{locationId}/kiosk/today", async (Guid locationId, IM
     })
     .WithName("GetKioskMenu")
     .RequireAuthorization(ApiKeyScheme)
-    .WithOpenApi();
+    .WithOpenApi(o =>
+    {
+        o.Tags.Add(new OpenApiTag { Name = ApiKeyScheme });
+        return o;
+    });
 
 app.MapGet("/api/kiosk/dish/{id}", async (Guid id, IMediator mediator) =>
     {
@@ -187,7 +188,11 @@ app.MapGet("/api/kiosk/dish/{id}", async (Guid id, IMediator mediator) =>
     })
     .WithName("GetKioskMenuItem")
     .RequireAuthorization(ApiKeyScheme)
-    .WithOpenApi();
+    .WithOpenApi(o =>
+    {
+        o.Tags.Add(new OpenApiTag { Name = ApiKeyScheme });
+        return o;
+    });
 
 // Location Management Endpoints
 app.MapGet("/api/locations", async (IMediator mediator) =>
@@ -203,15 +208,16 @@ app.MapPost("/api/locations", async (
     IMediator mediator,
     ClaimsPrincipal user) =>
     {
-        if (!user.IsInRole("admin"))
-            return Results.Forbid();
-
         var result = await mediator.Send(command);
         return Results.Created($"/api/locations/{result}", result);
     })
     .WithName("AddLocation")
-    .RequireAuthorization()
-    .WithOpenApi();
+    .RequireAuthorization(a => a.RequireRole(AdminRole))
+    .WithOpenApi(o =>
+    {
+        o.Tags.Add(new OpenApiTag { Name = AdminRole });
+        return o;
+    });
 
 app.MapDefaultEndpoints();
 
