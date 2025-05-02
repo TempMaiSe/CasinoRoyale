@@ -4,9 +4,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var eventStore = builder.AddEventStore("eventstore")
                         .WithImage("kurrentplatform/kurrentdb:25.0")
+                        .WithDataVolume()
                         .WithOtlpExporter();
 
 var keycloak = builder.AddKeycloak("keycloak", 8080)
+                      .WithDataVolume()
                       .WithOtlpExporter();
 
 var api = builder.AddProject<CasinoRoyale_Api>("api")
