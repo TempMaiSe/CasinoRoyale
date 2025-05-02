@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { clientEnv } from '@/lib/env';
+import LocationSelector from '@/components/LocationSelector';
+import { useLocation } from '@/contexts/LocationContext';
 
 interface MenuItemFormData {
   name: string;
@@ -18,6 +20,7 @@ interface MenuItemFormData {
 
 export default function AdminPage() {
   const { isAuthenticated, isAdmin, token, login } = useAuth();
+  const { selectedLocation } = useLocation();
   const router = useRouter();
   const [formData, setFormData] = useState<MenuItemFormData>({
     name: '',
@@ -40,15 +43,20 @@ export default function AdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!selectedLocation) {
+      alert('Please select a location before adding a menu item.');
+      return;
+    }
+
     try {
-      const response = await fetch(`${clientEnv.apiUrl}/api/menu/items`, {
+      const response = await fetch(`${clientEnv.apiUrl}/api/locations/${selectedLocation.id}/menu/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, locationId: selectedLocation.id }),
       });
 
       if (response.ok) {
@@ -80,7 +88,9 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Menu Management</h1>
-        
+
+        <LocationSelector />
+
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
           <div className="grid grid-cols-1 gap-6">
             <div>

@@ -1,11 +1,11 @@
 'use client';
 
 import { clientEnv } from '@/lib/env';
-import { MenuType } from '@/types/menu';
 import { useEffect, useState } from 'react';
+import { useLocation } from '@/contexts/LocationContext';
 
-async function getDailyMenu() {
-  const res = await fetch(`${clientEnv.apiUrl}/api/menu/today`, {
+async function getDailyMenu(locationId: string) {
+  const res = await fetch(`${clientEnv.apiUrl}/api/locations/${locationId}/menu/today`, {
     next: { revalidate: 60 }, // Revalidate every minute
   });
 
@@ -13,16 +13,30 @@ async function getDailyMenu() {
   return res.json();
 }
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  isSpecialOffer: boolean;
+  employeePrice: number;
+  externalPrice: number;
+  allergens: string[];
+}
+
 export default function DailyKioskPage() {
-  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const { selectedLocation } = useLocation();
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const categories = ['Breakfast', 'Lunch', 'AfternoonTea'] as const;
 
   useEffect(() => {
+    if (!selectedLocation) return;
+
     const fetchMenu = async () => {
       try {
-        const data = await getDailyMenu();
+        const data = await getDailyMenu(selectedLocation.id);
         setMenuItems(data);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch menu'));
@@ -37,7 +51,15 @@ export default function DailyKioskPage() {
     const refreshInterval = setInterval(fetchMenu, 60000); // Refresh every minute
 
     return () => clearInterval(refreshInterval);
-  }, []);
+  }, [selectedLocation]);
+
+  if (!selectedLocation) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-2xl text-gray-600">Please select a location to view the menu.</div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -58,18 +80,18 @@ export default function DailyKioskPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-5xl font-bold text-center mb-12">Today's Menu</h1>
+        <h1 className="text-5xl font-bold text-center mb-12">Today&apos;s Menu</h1>
 
         <div className="space-y-12">
           {categories.map((category) => {
-            const items = menuItems.filter((item: any) => item.type === category);
+            const items = menuItems.filter((item) => item.type === category);
             if (items.length === 0) return null;
 
             return (
               <section key={category} className="bg-white rounded-2xl shadow-lg p-8">
                 <h2 className="text-3xl font-semibold mb-6">{category}</h2>
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  {items.map((item: any) => (
+                  {items.map((item) => (
                     <div
                       key={item.id}
                       className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-shadow"
@@ -99,7 +121,7 @@ export default function DailyKioskPage() {
                       </div>
                       {item.allergens.length > 0 && (
                         <div className="mt-4 flex flex-wrap gap-1">
-                          {item.allergens.map((allergen: string) => (
+                          {item.allergens.map((allergen) => (
                             <span
                               key={allergen}
                               className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm"
