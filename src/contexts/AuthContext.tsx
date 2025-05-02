@@ -62,7 +62,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = () => {
-    keycloak.login();
+    if (!keycloak.authenticated) {
+      keycloak
+        .init({
+          onLoad: 'login-required',
+          silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+        })
+        .then(() => {
+          keycloak.login({
+            redirectUri: window.location.origin
+          });
+        });
+    } else {
+      keycloak.login({
+        redirectUri: window.location.origin
+      });
+    }
   };
 
   const logout = () => {
