@@ -16,6 +16,8 @@ const string ApiKeyScheme = "ApiKey";
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container
 builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 
@@ -189,5 +191,7 @@ app.MapPost("/api/locations", async (
     .WithName("AddLocation")
     .RequireAuthorization()
     .WithOpenApi();
+
+app.MapDefaultEndpoints();
 
 await app.RunAsync();

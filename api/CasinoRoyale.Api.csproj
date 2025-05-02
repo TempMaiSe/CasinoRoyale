@@ -17,4 +17,8 @@
     <PackageReference Include="NodaTime" Version="3.2.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../aspire/ServiceDefaults/ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>
