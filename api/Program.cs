@@ -1,16 +1,15 @@
 using KurrentDB.Client;
-using Keycloak.AuthServices.Sdk;
-using Keycloak.AuthServices.Authentication;
-using Keycloak.AuthServices.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
-using System.Text.Json;
 using NodaTime;
-using CasinoRoyale.Api.Domain.Entities;
 using CasinoRoyale.Api.Application.Commands;
 using CasinoRoyale.Api.Application.Queries;
 using CasinoRoyale.Api.Infrastructure.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.IdentityModel.Tokens.Jwt;
 
 const string ApiKeyScheme = "ApiKey";
 
@@ -25,7 +24,7 @@ builder.Services.AddSingleton<IClock>(NodaTime.SystemClock.Instance);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
-    /*options.DocumentTitle = "Casino Royale API";
+/*options.DocumentTitle = "Casino Royale API";
     options.Version = "v1";
     options.SecuritySchemes.Add("Bearer", new()
     {
@@ -41,24 +40,34 @@ builder.Services.AddOpenApi(options =>
     });*/
 });
 
-// Add Keycloak Authentication
-/*var authenticationOptions = builder.Configuration
-    .GetSection(KeycloakAuthenticationOptions.Section)
-    .Get<KeycloakAuthenticationOptions>(options => 
-    {
-        options.BinderType = KeycloakFormatBinder.Instance;
-    });
 
-builder.Services.AddKeycloakWebApiAuthentication(authenticationOptions);
+// Add Keycloak Authentication
+var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+builder.Services.AddAuthentication(oidcScheme)
+                .AddKeycloakOpenIdConnect(
+                    "keycloak", 
+                    realm: "casino-royale",
+                    oidcScheme,
+                    options => 
+                    {
+                        options.ClientId = "casino-royale";
+                        options.ResponseType = OpenIdConnectResponseType.Code;
+                        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
+                        options.SaveTokens = true;
+                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    })
+                    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+
+builder.Services.AddCascadingAuthenticationState();
 
 // Add API Key Authentication
-*/
 builder.Services.AddAuthentication()
     .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyScheme, _ => { });
 
 // Add Authorization
-builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration); // [!code focus]
-builder.Services.AddAuthorization(); // [!code focus]
+builder.Services.AddAuthorization();
 
 // Add EventStoreDB
 builder.Services.AddSingleton(new KurrentDBClient(KurrentDBClientSettings.Create(

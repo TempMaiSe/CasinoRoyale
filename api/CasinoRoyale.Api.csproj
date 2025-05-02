@@ -8,9 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="KurrentDB.Client" Version="1.0.0-alpha.0.285" />
-    <PackageReference Include="Keycloak.AuthServices.Sdk" Version="2.6.1" />
-    <PackageReference Include="Keycloak.AuthServices.Authentication" Version="2.6.1" />
-    <PackageReference Include="Keycloak.AuthServices.Authorization" Version="2.6.1" />
+    <PackageReference Include="Aspire.Keycloak.Authentication" Version="9.2.1-preview.1.25222.1" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
